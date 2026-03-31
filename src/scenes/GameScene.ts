@@ -1110,9 +1110,9 @@ export class GameScene extends Phaser.Scene {
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
             this.scene.start('GameCompleteScene', { score: this.score, coins: this.coinCount });
         } else {
-            // Go directly to next level (no intermediate screen)
+            // Go directly to next level — use restart since we're already in GameScene
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
-            this.scene.start('GameScene', { level: nextLevel });
+            this.scene.restart({ level: nextLevel });
         }
     }
 
