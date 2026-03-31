@@ -385,19 +385,16 @@ export class GameScene extends Phaser.Scene {
     private coinCount = 0;
     private isPaused = false;
     private levelComplete = false;
-    private static pendingLevel: number | null = null;
 
     constructor() {
         super({ key: 'GameScene' });
     }
 
     init(data: { level?: number }): void {
-        // Use pendingLevel if set (from advanceLevel), otherwise use data param
-        if (GameScene.pendingLevel !== null) {
-            this.currentLevel = GameScene.pendingLevel;
-            GameScene.pendingLevel = null;
-        } else {
-            this.currentLevel = data?.level ?? 0;
+        // If data.level is provided use it, otherwise keep the current value
+        // (advanceLevel sets currentLevel before restart)
+        if (data && typeof data.level === 'number') {
+            this.currentLevel = data.level;
         }
         this.score = 0;
         this.coinCount = 0;
@@ -1042,6 +1039,7 @@ export class GameScene extends Phaser.Scene {
     private handleFlagReach = (): void => {
         if (this.levelComplete) return;
         this.levelComplete = true;
+        console.log('[Game] Flag reached! current level:', this.currentLevel);
 
         this.flagPole.reach();
         this.player.setCanMove(false);
@@ -1049,6 +1047,7 @@ export class GameScene extends Phaser.Scene {
 
         // Go directly to next level after short celebration
         this.time.delayedCall(800, () => {
+            console.log('[Game] advanceLevel() called, going to level', this.currentLevel + 1);
             this.advanceLevel();
         });
     };
@@ -1113,13 +1112,17 @@ export class GameScene extends Phaser.Scene {
         });
 
         if (nextLevel >= LEVEL_CONFIG.length) {
-            // Game complete!
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
             this.scene.start('GameCompleteScene', { score: this.score, coins: this.coinCount });
         } else {
-            // Go directly to next level
+            // Set the level directly and restart the scene
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
-            GameScene.pendingLevel = nextLevel;
+            this.currentLevel = nextLevel;
+            this.score = 0;
+            this.coinCount = 0;
+            this.isPaused = false;
+            this.levelComplete = false;
+            // Remove all game objects and re-create
             this.scene.restart();
         }
     }
