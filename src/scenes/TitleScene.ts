@@ -8,14 +8,6 @@ export class TitleScene extends Phaser.Scene {
     }
 
     create(): void {
-        // Check if we need to auto-start a specific level (set by level advance)
-        const pendingLevel = localStorage.getItem('mara_next_level');
-        if (pendingLevel !== null) {
-            localStorage.removeItem('mara_next_level');
-            this.scene.start('GameScene', { level: parseInt(pendingLevel, 10) });
-            return;
-        }
-
         // Full-screen sky blue rectangle as background
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x87CEEB);
 
