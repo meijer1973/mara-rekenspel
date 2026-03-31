@@ -1040,27 +1040,9 @@ export class GameScene extends Phaser.Scene {
         this.player.setCanMove(false);
         AudioManager.play('levelComplete');
 
-        // Trigger level-complete math
-        this.time.delayedCall(1000, () => {
-            this.triggerMathPopup('level_complete', () => {
-                // Correct: advance to next level
-                this.advanceLevel();
-            }, () => {
-                // Wrong: try again with new problem
-                this.levelComplete = false;
-                this.flagPole = new FlagPole(this, this.flagPole.x, this.flagPole.y);
-                this.player.setCanMove(true);
-                // Give another chance at flag
-                this.time.delayedCall(1000, () => {
-                    this.levelComplete = true;
-                    this.triggerMathPopup('level_complete', () => {
-                        this.advanceLevel();
-                    }, () => {
-                        // Second wrong: still advance but fewer points
-                        this.advanceLevel();
-                    });
-                });
-            });
+        // Go directly to next level after short celebration
+        this.time.delayedCall(800, () => {
+            this.advanceLevel();
         });
     };
 
@@ -1117,23 +1099,20 @@ export class GameScene extends Phaser.Scene {
 
     private advanceLevel(): void {
         SaveManager.updateHighScore(this.score);
+        const nextLevel = this.currentLevel + 1;
         SaveManager.save({
-            currentLevel: Math.min(this.currentLevel + 1, LEVEL_CONFIG.length - 1),
+            currentLevel: Math.min(nextLevel, LEVEL_CONFIG.length - 1),
             totalCoins: SaveManager.load().totalCoins + this.coinCount,
         });
 
-        if (this.currentLevel + 1 >= LEVEL_CONFIG.length) {
+        if (nextLevel >= LEVEL_CONFIG.length) {
             // Game complete!
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
             this.scene.start('GameCompleteScene', { score: this.score, coins: this.coinCount });
         } else {
+            // Go directly to next level (no intermediate screen)
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
-            this.scene.start('LevelCompleteScene', {
-                level: this.currentLevel,
-                score: this.score,
-                coins: this.coinCount,
-                nextLevel: this.currentLevel + 1,
-            });
+            this.scene.start('GameScene', { level: nextLevel });
         }
     }
 
