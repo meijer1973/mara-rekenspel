@@ -372,6 +372,8 @@ function makeLevelMaps(): string[][] {
 
 const LEVEL_MAPS = makeLevelMaps();
 
+// Level transitions use LoadNextScene as intermediate scene
+
 export class GameScene extends Phaser.Scene {
     private player!: Player;
     private enemies: Goomba[] = [];
@@ -391,11 +393,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     init(data: { level?: number }): void {
-        // If data.level is provided use it, otherwise keep the current value
-        // (advanceLevel sets currentLevel before restart)
-        if (data && typeof data.level === 'number') {
-            this.currentLevel = data.level;
-        }
+        this.currentLevel = data?.level ?? 0;
         this.score = 0;
         this.coinCount = 0;
         this.isPaused = false;
@@ -1115,15 +1113,9 @@ export class GameScene extends Phaser.Scene {
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
             this.scene.start('GameCompleteScene', { score: this.score, coins: this.coinCount });
         } else {
-            // Set the level directly and restart the scene
-            if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
-            this.currentLevel = nextLevel;
-            this.score = 0;
-            this.coinCount = 0;
-            this.isPaused = false;
-            this.levelComplete = false;
-            // Remove all game objects and re-create
-            this.scene.restart();
+            // Simplest reliable approach: save level and reload the page
+            localStorage.setItem('mara_next_level', String(nextLevel));
+            window.location.reload();
         }
     }
 

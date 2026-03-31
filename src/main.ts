@@ -8,6 +8,7 @@ import { MathPopupScene } from './scenes/MathPopupScene';
 import { LevelCompleteScene } from './scenes/LevelCompleteScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { GameCompleteScene } from './scenes/GameCompleteScene';
+import { LoadNextScene } from './scenes/LoadNextScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
@@ -41,6 +42,7 @@ const config: Phaser.Types.Core.GameConfig = {
         LevelCompleteScene,
         GameOverScene,
         GameCompleteScene,
+        LoadNextScene,
     ],
 };
 
