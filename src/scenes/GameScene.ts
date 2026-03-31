@@ -385,13 +385,20 @@ export class GameScene extends Phaser.Scene {
     private coinCount = 0;
     private isPaused = false;
     private levelComplete = false;
+    private static pendingLevel: number | null = null;
 
     constructor() {
         super({ key: 'GameScene' });
     }
 
     init(data: { level?: number }): void {
-        this.currentLevel = data.level ?? 0;
+        // Use pendingLevel if set (from advanceLevel), otherwise use data param
+        if (GameScene.pendingLevel !== null) {
+            this.currentLevel = GameScene.pendingLevel;
+            GameScene.pendingLevel = null;
+        } else {
+            this.currentLevel = data?.level ?? 0;
+        }
         this.score = 0;
         this.coinCount = 0;
         this.isPaused = false;
@@ -1110,9 +1117,10 @@ export class GameScene extends Phaser.Scene {
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
             this.scene.start('GameCompleteScene', { score: this.score, coins: this.coinCount });
         } else {
-            // Go directly to next level — use restart since we're already in GameScene
+            // Go directly to next level
             if (this.scene.isActive('HUDScene')) this.scene.stop('HUDScene');
-            this.scene.restart({ level: nextLevel });
+            GameScene.pendingLevel = nextLevel;
+            this.scene.restart();
         }
     }
 
